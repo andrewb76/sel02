@@ -11,6 +11,6 @@ async function bootstrap() {
       transports: getLogTransport(process.env),
     } as WinstonModuleOptions),
   });
-  await app.listen(3000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();

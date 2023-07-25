@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+---------------------------------------------------
+
+## Start Ory auth proxy for local dev
+npx @ory/cli tunnel --dev --project crazy-knuth-x77flx8gin http://localhost:9000
