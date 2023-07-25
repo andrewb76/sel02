@@ -1,0 +1,64 @@
+diff --git a/node_modules/node-vk-bot-api/lib/context.js b/node_modules/node-vk-bot-api/lib/context.js
+index 8a8ada7..dce41d6 100644
+--- a/node_modules/node-vk-bot-api/lib/context.js
++++ b/node_modules/node-vk-bot-api/lib/context.js
+@@ -7,6 +7,8 @@ class Context {
+       group_id: groupId,
+     } = request;
+ 
++    // console.log('......', request, update)
++
+     if (update.message) {
+       this.message = { ...update.message, type };
+ 
+@@ -31,7 +33,8 @@ class Context {
+   }
+ 
+   reply(...args) {
+-    return this.bot.sendMessage(this.message.peer_id || this.message.user_id, ...args);
++    console.log(args, this.message)
++    return this.bot.sendMessage(this.message.peer_id || this.message.user_id || args[0], ...args);
+   }
+ }
+ 
+diff --git a/node_modules/node-vk-bot-api/lib/methods/webhookCallback.js b/node_modules/node-vk-bot-api/lib/methods/webhookCallback.js
+index 05eac61..f6b81df 100644
+--- a/node_modules/node-vk-bot-api/lib/methods/webhookCallback.js
++++ b/node_modules/node-vk-bot-api/lib/methods/webhookCallback.js
+@@ -3,28 +3,25 @@ const Context = require('../context');
+ 
+ const CONFIRMATION_TYPE = 'confirmation';
+ 
+-module.exports = function (...args) {
++module.exports = function (body) {
+   if (this.isStopped) {
+     return;
+   }
+ 
+-  const request = new Request(...args);
+-
+   if (
+-    request.body.type !== CONFIRMATION_TYPE
++    body.type !== CONFIRMATION_TYPE
+     && this.settings.secret
+-    && this.settings.secret !== request.body.secret
++    && this.settings.secret !== body.secret
+   ) {
+-    request.body = 'error';
++    body = 'error';
+ 
+     return;
+   }
+ 
+-  if (request.body.type !== CONFIRMATION_TYPE) {
+-    request.body = 'ok';
+-
+-    return this.next(new Context(request.body, this));
++  if (body.type !== CONFIRMATION_TYPE) {
++    return this.next(new Context(body, this));
+   }
+ 
+-  request.body = this.settings.confirmation.toString();
++  body = this.settings.confirmation.toString();
++  return body;
+ };
