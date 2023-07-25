@@ -3,6 +3,10 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import Loki from 'lokipush';
 import Transport = require('winston-transport');
 
+// import { Logger } from 'winston';
+// export class AppLogger extends Logger {
+// }
+
 class MyLokiTransport extends Transport {
   private loki;
 

@@ -15,6 +15,7 @@ const VkBot = require('node-vk-bot-api');
 export class VkService {
   private isReady = false;
   private bot;
+  private l: Logger;
 
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -23,7 +24,8 @@ export class VkService {
     private readonly eventEmitter: EventEmitter2,
     private config: ConfigService,
   ) {
-    this.logger.verbose('VkService init done');
+    this.l = this.logger.child({ context: 's:vk' });
+    this.l.verbose('VkService init done');
 
     this.bot = new VkBot({
       token: process.env.VK_TOKEN,
@@ -38,48 +40,48 @@ export class VkService {
 
     this.bot.use(async (ctx, next) => {
       try {
-        this.logger.verbose('Bot MW');
+        this.l.verbose('Bot MW');
         next();
       } catch (error) {
-        this.logger.error(error);
+        this.l.error(error);
       }
     });
 
     if (this.config.get('vk.longPoll')) {
-      this.logger.verbose(this.config.get('vk.longPoll'));
-      this.logger.verbose('Bot Polling is On');
+      this.l.verbose(this.config.get('vk.longPoll'));
+      this.l.verbose('Bot Polling is On');
 
       this.bot.startPolling((err) => {
         if (err) {
-          this.logger.error(`VkBotPolling [${JSON.stringify(err)}]`);
+          this.l.error(`VkBotPolling [${JSON.stringify(err)}]`);
         }
       });
     } else {
-      this.logger.verbose('Bot Polling is Off');
+      this.l.verbose('Bot Polling is Off');
     }
   }
 
   @OnEvent('vk.replay')
   private async vkReply(payload: any): Promise<void> {
-    this.logger.info(`@OnEvent('vk.replay') [${payload.to}] [${payload.text}]`);
-    this.logger.debug(`ToReply: ${JSON.stringify(payload)}`);
+    this.l.info(`@OnEvent('vk.replay') [${payload.to}] [${payload.text}]`);
+    this.l.debug(`ToReply: ${JSON.stringify(payload)}`);
     if (this.config.get('vk.replay')) {
       try {
         await this.bot.sendMessage(payload.to, payload.text);
       } catch (error) {
-        this.logger.error(JSON.stringify(error, null, 2));
+        this.l.error(JSON.stringify(error, null, 2));
       }
     } else {
-      this.logger.info(`@OnEvent('vk.replay') [Silent mode]`);
+      this.l.info(`@OnEvent('vk.replay') [Silent mode]`);
     }
   }
 
   public getBotCB(cb: any) {
     if (this.config.get('vk.webhook')) {
-      this.logger.info('VkS::getBotCB start');
+      this.l.info('VkS::getBotCB start');
       return this.bot.webhookCallback(cb);
     } else {
-      this.logger.warn('VkS::getBotCB skip', (...par) => { console.log('>>>>>>>', par); });
+      this.l.warn('VkS::getBotCB skip', (...par) => { console.log('>>>>>>>', par); });
       cb();
     }
   }
@@ -87,17 +89,17 @@ export class VkService {
   private async processRequest(ctx) {
     const { message } = ctx;
     const age = getUnixTime(new Date()) - message.date;
-    this.logger.info(`VkS::processRequest ${message.text}, Age: ${age}`);
-    this.logger.verbose(`VkS::processRequest [${JSON.stringify(message)}]`);
+    this.l.info(`VkS::processRequest ${message.text}, Age: ${age}`);
+    this.l.verbose(`VkS::processRequest [${JSON.stringify(message)}]`);
     // if (age > 10) {
-    //   this.logger.info(`VkS::processRequest Skip`);
+    //   this.l.info(`VkS::processRequest Skip`);
     //   // Игнорируем старые запросы //
     //   return;
     // }
-    this.logger.info(`VkS::processRequest Pass`);
-    // this.logger.log(message, 'VK_S:process message >>>');
+    this.l.info(`VkS::processRequest Pass`);
+    // this.l.log(message, 'VK_S:process message >>>');
     const user = await this.vkUsers.getUserById(message.from_id);
-    // this.logger.log(user, 'VK_S:get user info >>>');
+    // this.l.log(user, 'VK_S:get user info >>>');
     this.vkMsg.markAsRead(message.conversation_message_id);
     const payload = { 
       addedAt: new Date(),
@@ -106,9 +108,9 @@ export class VkService {
       user,
       message,
     };
-    this.logger.info(`VK_S:E:gpt.request 1 : ${JSON.stringify(payload)}`);
+    this.l.info(`VK_S:E:gpt.request 1 : ${JSON.stringify(payload)}`);
     setTimeout(() => {
-      this.logger.info(`VK_S:E:gpt.request 2 :`);
+      this.l.info(`VK_S:E:gpt.request 2 :`);
       this.eventEmitter.emit('gpt.request', payload);
     }, 2500);
   }

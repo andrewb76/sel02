@@ -27,6 +27,7 @@ export class GptService {
   private gptStatus = EGptStatus.ready;
   private hotDelay = 0;
   private pool: Array<IGptTask> = [];
+  private l: Logger;
 
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -34,7 +35,17 @@ export class GptService {
     private readonly eventEmitter: EventEmitter2,
     private readonly http: HttpService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.l = this.logger.child({ context: 's:gpt' });
+
+    this.l.log('silly', `silly level demo`);
+    this.l.log('debug', `debug level demo`);
+    this.l.log('verbose', `verbose level demo`);
+    this.l.log('info', `info level demo`);
+    this.l.log('warn', `warn level demo`);
+    this.l.log('error', `error level demo`);
+
+  }
 
   @Interval(2000)
   private processing() {
@@ -43,17 +54,17 @@ export class GptService {
     } else if (this.gptStatus === EGptStatus.hot && this.hotDelay === 0) {
       this.gptStatus = EGptStatus.ready;
     } else if (this.gptStatus === EGptStatus.ready && this.pool.length) {
-      this.logger.verbose('Trying to get GPT response');
+      this.l.verbose('Trying to get GPT response');
       this.gptStatus = EGptStatus.busy;
       const taskForProcessing = this.pool.shift();
       // this.metricsService.setPoolSize(this.pool.length);
       this.resolveTask(taskForProcessing)
         .then((resp) => {
-          this.logger.debug(`GPT Response: ${JSON.stringify(resp)}`);
+          this.l.debug(`GPT Response: ${JSON.stringify(resp)}`);
           this.gptStatus = EGptStatus.ready;
           // taskForProcessing.cb(resp.response);
 
-          this.logger.info(
+          this.l.info(
             `GPTServ::processing ${JSON.stringify(resp.response)}`,
           );
 
@@ -71,7 +82,7 @@ export class GptService {
         .catch((error) => {
           // this.metricsService.incrementRequestCounter('failed');
           // this.metricsService.setRequestDelayHistogram('failed', differenceInMilliseconds(new Date(), taskForProcessing.addedAt));
-          this.logger.warn(
+          this.l.warn(
             `${JSON.stringify({ error, taskForProcessing })}, [[ GPT error ]]`,
           );
           if (error?.status === 429) {
@@ -81,7 +92,7 @@ export class GptService {
               (this.gptStatus = EGptStatus.hot);
             this.hotDelay = 3;
           } else {
-            // this.logger.error('GPT Error:', JSON.stringify(?Zerror, null, 2));
+            // this.l.error('GPT Error:', JSON.stringify(?Zerror, null, 2));
             this.gptStatus = EGptStatus.hot;
             this.hotDelay = 4;
           }
@@ -91,7 +102,7 @@ export class GptService {
 
   @OnEvent('db.logUsage')
   private async logUsage(payload) {
-    this.logger.info(
+    this.l.info(
       `@OnEvent('db.logUsage')::logUsage [${JSON.stringify(payload)}]`,
     );
     await this.db.logUsage(payload);
@@ -99,7 +110,7 @@ export class GptService {
 
   @OnEvent('gpt.request')
   getNewJob(payload: any): void {
-    this.logger.info(
+    this.l.info(
       `@OnEvent('gpt.request')::poolSize [${
         this.pool.length
       }] [${JSON.stringify(payload)}] [${this.hotDelay}]`,
@@ -109,23 +120,23 @@ export class GptService {
   }
 
   private resolveTask(task: IGptTask): Promise<any> {
-    this.logger.info(`resolveTask::poolSize [${this.pool.length}]`);
+    this.l.info(`resolveTask::poolSize [${this.pool.length}]`);
     const requestBody = {
       model: 'gpt-3.5-turbo',
       messages: [
-        {
-          role: 'system',
-        //   // content: `You are ${task.user.full_name} with ID: ${task.user.id}`,
-        //   // content: `Представь что ты психиатор и ведеш прием латентного алкоголика, поинтересуйся своими словами, какие мысли навели меня на этот вопрос, незабывай шутить и советовать всякие народные средства для торможения психики`,
-          content: `Я хочу чтобы ты выступил в роли офицара государственной безопасности, и любой вопрос нужно свести в шутку и переворачивать в обратный вопрос, например:
-          с какой целью я интерисуюсь данной информацией, на кого я работаю? есть ли родственники заграницей, или чтото в этом роде, прояви креативность, говори с издевками и подколами.
-          `,
-        },
+        // {
+        //   role: 'system',
+        // //   // content: `You are ${task.user.full_name} with ID: ${task.user.id}`,
+        // //   // content: `Представь что ты психиатор и ведеш прием латентного алкоголика, поинтересуйся своими словами, какие мысли навели меня на этот вопрос, незабывай шутить и советовать всякие народные средства для торможения психики`,
+        //   content: `Я хочу чтобы ты выступил в роли офицара государственной безопасности, и любой вопрос нужно свести в шутку и переворачивать в обратный вопрос, например:
+        //   с какой целью я интерисуюсь данной информацией, на кого я работаю? есть ли родственники заграницей, или чтото в этом роде, прояви креативность, говори с издевками и подколами.
+        //   `,
+        // },
         { role: 'user', content: task.request },
       ],
       // messages: [{ role: 'user', content: task.request, user: 'model' }],
     };
-    this.logger.verbose(
+    this.l.verbose(
       `GptServ::resolveTask:requestBody ${JSON.stringify(requestBody)}`,
     );
 
@@ -149,7 +160,7 @@ export class GptService {
         .post('https://api.openai.com/v1/chat/completions', requestBody, config)
         .pipe(
           map((d) => {
-            this.logger.info(
+            this.l.info(
               `GptServ::resolveTask:originResp ${JSON.stringify(d.data)}`,
             );
             const {
@@ -176,7 +187,7 @@ export class GptService {
         )
         .pipe(
           map((d) => {
-            this.logger.info(`gpt.response ${JSON.stringify(d)}`);
+            this.l.info(`gpt.response ${JSON.stringify(d)}`);
             return d;
           }),
         ),

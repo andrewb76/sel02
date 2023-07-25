@@ -8,16 +8,17 @@ const vkApi = require('node-vk-bot-api/lib/api');
 
 @Injectable()
 export class VkMsgService {
-  private users;
+  // private users;
   private api;
+  private l: Logger;
 
   constructor(
     private db: DbService,
     private config: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {
-    this.users = new Map();
-
+    // this.users = new Map();
+    this.l = this.logger.child({ context: 's:vk:msg' });
     this.api = (method, params) => {
       return vkApi(method, {
         ...params,
@@ -32,7 +33,7 @@ export class VkMsgService {
         const { response } = await this.api('messages.markAsRead', {
           start_message_id: id,
         });
-        this.logger.verbose(
+        this.l.verbose(
           `VkMsgServ:::markAsRead::resp [${JSON.stringify(response)}]`,
         );
         return resolve(true);

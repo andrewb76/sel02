@@ -15,7 +15,6 @@ import {
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { getLogTransport } from './app.helpers';
-// import { DbService } from './db/db.service';
 
 
 @Module({
