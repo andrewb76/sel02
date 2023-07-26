@@ -44,7 +44,6 @@ export class GptService {
     this.l.log('info', `info level demo`);
     this.l.log('warn', `warn level demo`);
     this.l.log('error', `error level demo`);
-
   }
 
   @Interval(2000)
@@ -64,9 +63,7 @@ export class GptService {
           this.gptStatus = EGptStatus.ready;
           // taskForProcessing.cb(resp.response);
 
-          this.l.info(
-            `GPTServ::processing ${JSON.stringify(resp.response)}`,
-          );
+          this.l.info(`processing ${JSON.stringify(resp.response)}`);
 
           // this.db.setLastUserMsgId(taskForProcessing.user.id, )
 
@@ -124,21 +121,19 @@ export class GptService {
     const requestBody = {
       model: 'gpt-3.5-turbo',
       messages: [
-        // {
-        //   role: 'system',
-        // //   // content: `You are ${task.user.full_name} with ID: ${task.user.id}`,
+        {
+          role: 'system',
+          content: 'You are a helpful assistant.,',
         // //   // content: `Представь что ты психиатор и ведеш прием латентного алкоголика, поинтересуйся своими словами, какие мысли навели меня на этот вопрос, незабывай шутить и советовать всякие народные средства для торможения психики`,
         //   content: `Я хочу чтобы ты выступил в роли офицара государственной безопасности, и любой вопрос нужно свести в шутку и переворачивать в обратный вопрос, например:
         //   с какой целью я интерисуюсь данной информацией, на кого я работаю? есть ли родственники заграницей, или чтото в этом роде, прояви креативность, говори с издевками и подколами.
         //   `,
-        // },
+        },
         { role: 'user', content: task.request },
       ],
       // messages: [{ role: 'user', content: task.request, user: 'model' }],
     };
-    this.l.verbose(
-      `GptServ::resolveTask:requestBody ${JSON.stringify(requestBody)}`,
-    );
+    this.l.verbose(`resolveTask:requestBody ${JSON.stringify(requestBody)}`);
 
     const config = {
       headers: {
@@ -147,12 +142,12 @@ export class GptService {
       },
     };
     if (this.config.get('gpt.moc')) {
-      return Promise.resolve( {
+      return Promise.resolve({
         id: '1234567',
         userId: task.owner,
         created: new Date(),
         query: 'Moc query',
-        response:'Moc response',
+        response: 'Moc response',
       });
     }
     return lastValueFrom(
@@ -160,9 +155,7 @@ export class GptService {
         .post('https://api.openai.com/v1/chat/completions', requestBody, config)
         .pipe(
           map((d) => {
-            this.l.info(
-              `GptServ::resolveTask:originResp ${JSON.stringify(d.data)}`,
-            );
+            this.l.info(`resolveTask:originResp ${JSON.stringify(d.data)}`);
             const {
               usage: { prompt_tokens, completion_tokens },
             } = d.data;
