@@ -10,7 +10,6 @@ import { VkMsgService } from './vk.service.msg';
 
 const VkBot = require('node-vk-bot-api');
 
-
 @Injectable()
 export class VkService {
   private isReady = false;
@@ -76,13 +75,17 @@ export class VkService {
     }
   }
 
-  public getBotCB(cb: any) {
+  public getBotResp(body: any) {
     if (this.config.get('vk.webhook')) {
       this.l.info('VkS::getBotCB start');
-      return this.bot.webhookCallback(cb);
+      return this.bot.webhookCallback(body);
     } else {
-      this.l.warn('VkS::getBotCB skip', (...par) => { console.log('>>>>>>>', par); });
-      cb();
+      this.l.warn('VkS::getBotCB skip', (...par) => {
+        this.l.verbose(
+          `VkS::getBotCB skip CB params >>>>>>> [${JSON.stringify(par)}]`,
+        );
+      });
+      return 'disabled';
     }
   }
 
@@ -101,7 +104,7 @@ export class VkService {
     const user = await this.vkUsers.getUserById(message.from_id);
     // this.l.log(user, 'VK_S:get user info >>>');
     this.vkMsg.markAsRead(message.conversation_message_id);
-    const payload = { 
+    const payload = {
       addedAt: new Date(),
       owner: message.from_id,
       request: message.text.substr(1),

@@ -40,7 +40,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "winston": "^3.10.0",
-    "winston-transport": "^4.5.0"
+    "winston-transport": "^4.5.0",
+    "winston-transport-sentry-node": "^2.7.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

@@ -2,6 +2,8 @@ import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import Loki from 'lokipush';
 import Transport = require('winston-transport');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Sentry = require('winston-transport-sentry-node').default;
 
 // import { Logger } from 'winston';
 // export class AppLogger extends Logger {
@@ -30,7 +32,7 @@ class MyLokiTransport extends Transport {
 
 export function getLogTransport(vars): any {
   const trList = [];
-  if (vars.NODE_ENV === 'development') {
+  if (vars.LOG_CONSOLE_IS_ON === 'true') {
     trList.push(
       new winston.transports.Console({
         format: winston.format.combine(
@@ -46,7 +48,18 @@ export function getLogTransport(vars): any {
   }
 
   if (vars.LOG_LOKI_IS_ON === 'true') {
-    trList  .push(new MyLokiTransport(vars));
+    trList.push(new MyLokiTransport(vars));
+  }
+
+  if (vars.LOG_SENTRY_IS_ON === 'true') {
+    trList.push(
+      new Sentry({
+        sentry: {
+          dsn: vars.LOG_SENTRY_DSN,
+        },
+        level: vars.LOG_SENTRY_LEVEL,
+      }),
+    );
   }
 
   return trList;

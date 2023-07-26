@@ -1,16 +1,24 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Inject } from '@nestjs/common';
 import { VkService } from './vk.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 // import { formatDuration, intervalToDuration, fromUnixTime } from 'date-fns';
 
 @Controller('bot')
 export class VkController {
-  constructor(private readonly vkService: VkService) {}
+  private l: Logger;
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly vkService: VkService,
+  ) {
+    this.l = this.logger.child({ context: 'c:vk' });
+  }
 
   @Post('/')
   @HttpCode(200)
-  bot(@Body() cb: any): string {
+  bot(@Body() body: any): string {
     // if (cb?.object?.message?.date) {
-    //   // console.log(fromUnixTime(cb.object.message.date))
+    //   // this.l.verbose(fromUnixTime(cb.object.message.date))
     //   // let duration = intervalToDuration({
     //   //   start: fromUnixTime(cb.object.message.date),
     //   //   end: new Date(),
@@ -19,11 +27,8 @@ export class VkController {
     //   // cb.object.message.age_minutes = duration.minutes;
 
     // }
-    console.log(
-      'IN msg ::: ',
-      `[${JSON.stringify(cb)}]`,
-    );
-    const resp = this.vkService.getBotCB(cb);
+    this.l.verbose(`IN msg ::: [${JSON.stringify(body)}]`);
+    const resp = this.vkService.getBotResp(body);
     return resp;
   }
 }

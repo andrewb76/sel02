@@ -1,12 +1,21 @@
 export default () => ({
   port: parseInt(process.env.PORT) || 3000,
   logs: {
-    level: process.env.LOG_LEVEL || 'silly',
+    console: {
+      enabled: process.env.LOG_CONSOLE_IS_ON === 'true',
+      level: process.env.LOG_CONSOLE_LEVEL || 'silly',
+    },
     loki: {
       enabled: process.env.LOG_LOKI_IS_ON === 'true',
+      level: process.env.LOG_LOKI_LEVEL || 'silly',
       user: process.env.LOG_LOKI_USER,
       apiKey: process.env.LOG_LOKI_API_KEY,
       pod: process.env.LOG_LOKI_POD,
+    },
+    sentry: {
+      enabled: process.env.LOG_LOKI_IS_ON === 'true',
+      level: process.env.LOG_CONSOLE_LEVEL || 'silly',
+      user: process.env.LOG_LOKI_USER,
     },
   },
   vk: {
