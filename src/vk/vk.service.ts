@@ -94,11 +94,11 @@ export class VkService {
     const age = getUnixTime(new Date()) - message.date;
     this.l.info(`VkS::processRequest ${message.text}, Age: ${age}`);
     this.l.verbose(`VkS::processRequest [${JSON.stringify(message)}]`);
-    // if (age > 10) {
-    //   this.l.info(`VkS::processRequest Skip`);
-    //   // Игнорируем старые запросы //
-    //   return;
-    // }
+    if (age > 10) {
+      this.l.info(`VkS::processRequest Skip`);
+      // Игнорируем старые запросы //
+      return;
+    }
     this.l.info(`VkS::processRequest Pass`);
     // this.l.log(message, 'VK_S:process message >>>');
     const user = await this.vkUsers.getUserById(message.from_id);
