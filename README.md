@@ -75,5 +75,4 @@ Nest is [MIT licensed](LICENSE).
 
 ---------------------------------------------------
 
-## Start Ory auth proxy for local dev
-npx @ory/cli tunnel --dev --project crazy-knuth-x77flx8gin http://localhost:9000
+docker build -t vkgpt .
