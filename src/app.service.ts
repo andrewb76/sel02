@@ -20,7 +20,7 @@ export class AppService {
     return 'Hello World!';
   }
 
-  @Interval(10000)
+  // @Interval(10000)
   pushMetrics() {
     this.l.info('SS Push metrics');
     this.pushgateway.push({ jobName: 'vkgpt' });
