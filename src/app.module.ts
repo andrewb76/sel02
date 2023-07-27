@@ -48,6 +48,6 @@ import { getLogTransport } from './app.helpers';
     GptModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppController],
+  providers: [AppService, AppController, AppController],
 })
 export class AppModule {}

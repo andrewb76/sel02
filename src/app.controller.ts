@@ -1,16 +1,21 @@
-import { Controller, Get, LoggerService, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Injectable } from '@nestjs/common';
 import { AppService } from './app.service';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-// import { Timeout } from '@nestjs/schedule';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+
+@Injectable()
 @Controller()
 export class AppController {
+  private l: Logger;
+
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     private readonly appService: AppService,
   ) {
-    this.logger.verbose('DbService init done', { test: 'test' });
+    this.l = this.logger.child({ context: 'app:c' })
+    this.l.info('DbService init done', { test: 'test' });
   }
 
   @Get()
