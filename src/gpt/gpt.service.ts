@@ -147,8 +147,8 @@ export class GptService {
         id: '1234567',
         userId: task.owner,
         created: new Date(),
-        query: 'Moc query',
-        response: 'Moc response',
+        query: task.request,
+        response: `Moc response [${task.request}]`,
       });
     }
     return lastValueFrom(
