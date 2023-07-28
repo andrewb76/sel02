@@ -142,15 +142,19 @@ export class GptService {
         Authorization: `Bearer ${this.config.get('gpt.apiKey')}`,
       },
     };
-    if (this.config.get('gpt.moc')) {
-      return Promise.resolve({
-        id: '1234567',
-        userId: task.owner,
-        created: new Date(),
-        query: task.request,
-        response: `Moc response [${task.request}]`,
-      });
-    }
+
+    // if (this.config.get('gpt.moc')) {
+    //   return Promise.resolve({
+    //     id: '1234567',
+    //     userId: task.owner,
+    //     created: new Date(),
+    //     query: task.request,
+    //     response: `Moc resp. [${task.request}]`,
+    //   });
+    // }
+    // } else {
+    // }
+
     return lastValueFrom(
       this.http
         .post('https://api.openai.com/v1/chat/completions', requestBody, config)
