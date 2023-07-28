@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as client from "prom-client";
+import * as client from 'prom-client';
 
 @Injectable()
 export class AppService {
@@ -11,9 +11,9 @@ export class AppService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    private readonly pushgateway: client.Pushgateway
+    private readonly pushgateway: client.Pushgateway,
   ) {
-    this.l = this.logger.child({ context: 'app:s' })
+    this.l = this.logger.child({ context: 'app:s' });
   }
 
   getHello(): string {
@@ -23,6 +23,7 @@ export class AppService {
   // @Interval(10000)
   pushMetrics() {
     this.l.info('SS Push metrics');
-    this.pushgateway.push({ jobName: 'vkgpt' });
+    // this.pushgateway.pushAdd({ jobName: 'process_cpu_seconds_total' });
+    this.pushgateway.pushAdd({ jobName: 'process_cpu_user_seconds_total' });
   }
 }
